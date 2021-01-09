@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script type="text/javascript">
+        var canvas = document.querySelector('canvas');
+        var ctx = canvas.getContext('2d');
+        var width = "800", height = "600";
+
+        var mouse = {
+            x: 0,
+            y: 0
+        };
+
+        var selected = false;
+
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.backgroundColor = '#b7b6b6';
+
+        ctx.fillStyle = 'red';
+        ctx.lineWidth = 1;
+
+        var Circle = function (x, y, r) {
+            this.centerX = x;
+            this.centerY = y;
+            this.radius = r;
+        };
+
+        Circle.prototype = {
+            draw: function () {
+                ctx.beginPath();
+                ctx.arc(this.centerX - this.radius, this.centerY - this.radius, this.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.strokeStyle = 'red';
+                ctx.stroke();
+            },
+
+            stroke: function () {
+                ctx.beginPath();
+                ctx.arc(this.centerX - this.radius, this.centerY - this.radius, this.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.strokeStyle = 'blue';
+                ctx.stroke();
+            },
+
+            clear: function () {
+                ctx.beginPath();
+                ctx.arc(this.centerX - this.radius, this.centerY - this.radius, this.radius + ctx.lineWidth, 0, 2 * Math.PI, false);
+                ctx.fillStyle = '#b7b6b6';
+                ctx.fill();
+                ctx.strokeStyle = '#b7b6b6';
+                ctx.stroke();
+            }
+        };
+
+        var isCursorInCircle = function (circle) {
+            return mouse.x > circle.centerX  && mouse.x < circle.centerX + circle.radius && mouse.y > circle.centerY  && mouse.y < circle.centerY + circle.radius;
+        };
+        var i, circle = [];
+        for (i = 0; i < 3; i++) {
+            circle.push(new Circle(50 + i * (50 + 20), 100, 5.5));
+        }
+
+        setInterval(function () {
+            
+            for (i in circle) {
+                circle[i].clear();
+                circle[i].draw();
+
+                if (isCursorInCircle(circle[i])) {
+                    circle[i].stroke();
+                }
+            }
+            var oldCentreX;
+            var oldCentreY;
+            if (selected) {
+                selected.clear();
+                selected.centerX = mouse.x;
+                selected.centerY = mouse.y;
+                selected.stroke();
+            }
+
+        }, 20);
+
+        window.onmousemove = function (event) {
+            mouse.x = event.pageX;
+            mouse.y = event.pageY;
+        };
+
+        window.onmousedown = function () {
+            if (!selected) {
+                var i;
+                for (i in circle) {
+                    if (isCursorInCircle(circle[i])) {
+                        selected = circle[i];
+                    }
+                }
+            }
+            console.log('x=', mouse.x, 'y=', mouse.y);
+        };
+
+        window.onmouseup = function () {
+            selected = false;
+        };
+
+
+
+    </script>
+</body>
+</html>
