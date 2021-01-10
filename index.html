@@ -18,6 +18,13 @@
         };
 
         var selected = false;
+        var selectedLine1 = false;
+        var selectedLine2 = false;
+        let radiusCircle = 5.5;
+        var circle = [];
+        var line = [];
+        var j = 0;
+        var m = 0;
 
         canvas.width = width;
         canvas.height = height;
@@ -35,7 +42,7 @@
         Circle.prototype = {
             draw: function () {
                 ctx.beginPath();
-                ctx.arc(this.centerX - this.radius, this.centerY - this.radius, this.radius, 0, 2 * Math.PI, false);
+                ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI, false);
                 ctx.fillStyle = 'red';
                 ctx.fill();
                 ctx.strokeStyle = 'red';
@@ -44,7 +51,8 @@
 
             stroke: function () {
                 ctx.beginPath();
-                ctx.arc(this.centerX - this.radius, this.centerY - this.radius, this.radius, 0, 2 * Math.PI, false);
+                ctx.lineWidth = 1;
+                ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI, false);
                 ctx.fillStyle = 'red';
                 ctx.fill();
                 ctx.strokeStyle = 'blue';
@@ -53,7 +61,8 @@
 
             clear: function () {
                 ctx.beginPath();
-                ctx.arc(this.centerX - this.radius, this.centerY - this.radius, this.radius + ctx.lineWidth, 0, 2 * Math.PI, false);
+                ctx.lineWidth = 3;
+                ctx.arc(this.centerX, this.centerY, this.radius + ctx.lineWidth, 0, 2 * Math.PI, false);
                 ctx.fillStyle = '#b7b6b6';
                 ctx.fill();
                 ctx.strokeStyle = '#b7b6b6';
@@ -61,34 +70,112 @@
             }
         };
 
-        var isCursorInCircle = function (circle) {
-            return mouse.x > circle.centerX  && mouse.x < circle.centerX + circle.radius && mouse.y > circle.centerY  && mouse.y < circle.centerY + circle.radius;
+        var Line = function (xStart, yStart, xEnd, yEnd) {
+            this.xStart = xStart;
+            this.yStart = yStart;
+            this.xEnd = xEnd;
+            this.yEnd = yEnd;
         };
-        var i, circle = [];
-        for (i = 0; i < 3; i++) {
-            circle.push(new Circle(50 + i * (50 + 20), 100, 5.5));
-        }
+
+        Line.prototype = {
+            draw: function () {
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'red';
+                ctx.moveTo(this.xStart, this.yStart);
+                ctx.lineTo(this.xEnd, this.yEnd);
+                ctx.stroke();
+                ctx.closePath();
+            },
+
+            clear: function () {
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                ctx.moveTo(this.xStart, this.yStart);
+                ctx.lineTo(this.xEnd, this.yEnd);
+                ctx.strokeStyle = '#b7b6b6';
+                ctx.stroke();
+                ctx.closePath();
+            }
+        };
+
+        var isCursorInCircle = function (circle) {
+            return mouse.x > circle.centerX && mouse.x < circle.centerX + 2*circle.radius && mouse.y > circle.centerY  && mouse.y < circle.centerY + 2*circle.radius;
+        };
+
+        
+        window.onmouseup = function () {
+            console.log('j1=', j);
+            if (j < 3) {
+                circle.push(new Circle(mouse.x - radiusCircle, mouse.y - radiusCircle, radiusCircle));
+                j++;
+                console.log('j2=', j);
+            }
+
+            console.log('j3=', j);
+            if (j == 3) {
+                for (m; m < 3; m++) {
+                    if (m < 2) line.push(new Line(circle[m].centerX, circle[m].centerY, circle[m + 1].centerX, circle[m + 1].centerY));
+                    if (m == 2) line.push(new Line(circle[m].centerX, circle[m].centerY, circle[0].centerX, circle[0].centerY));
+                    console.log('m=', m, 'line[] =', line[m]);
+                };
+                
+            }
+
+            //for (let n in line) {
+            //    line[n].clear();
+            //    //line[m].draw();
+            //    console.log('clear n=', n, 'xStart=', line[n].xStart, 'yStart=', line[n].yStart, 'xEnd=', line[n].xEnd, 'yEnd=', line[n].yEnd);
+            //}
+            //for (let n in line) {
+            //    //line[m].clear();
+            //    line[n].draw();
+            //    console.log('draw n=', n, 'xStart=', line[n].xStart, 'yStart=', line[n].yStart, 'xEnd=', line[n].xEnd, 'yEnd=', line[n].yEnd);
+            //}
+            selected = false;
+        };
+
+        
+        
 
         setInterval(function () {
             
-            for (i in circle) {
-                circle[i].clear();
+            for (let i in circle) {
                 circle[i].draw();
 
                 if (isCursorInCircle(circle[i])) {
                     circle[i].stroke();
                 }
             }
-            var oldCentreX;
-            var oldCentreY;
-            if (selected) {
-                selected.clear();
-                selected.centerX = mouse.x;
-                selected.centerY = mouse.y;
-                selected.stroke();
+
+            for (let i in line) {
+                //line[i].clear();
+                line[i].draw();
             }
 
-        }, 20);
+            if (selected) {
+                selected.clear();
+                selected.centerX = mouse.x - selected.radius;
+                selected.centerY = mouse.y - selected.radius;
+                selected.stroke();
+
+
+                selectedLine1.clear();
+                selectedLine2.clear();
+                
+                selectedLine1.xStart = mouse.x - selected.radius;
+                console.log('selectedLine1.xStart =', selectedLine1.xStart);
+                selectedLine1.yStart = mouse.y - selected.radius;
+                console.log('selectedLine1.yStart=', selectedLine1.yStart);
+
+                selectedLine2.xEnd = mouse.x - selected.radius;
+                selectedLine2.yEnd = mouse.y - selected.radius;
+
+                selectedLine1.draw();
+                selectedLine2.draw();
+            }
+
+        }, 30);
 
         window.onmousemove = function (event) {
             mouse.x = event.pageX;
@@ -97,21 +184,30 @@
 
         window.onmousedown = function () {
             if (!selected) {
-                var i;
+                let  i;
                 for (i in circle) {
                     if (isCursorInCircle(circle[i])) {
                         selected = circle[i];
+                        if (i == 0) {
+                            selectedLine1 = line[0];
+                            selectedLine2 = line[2];
+                        } 
+                        if (i == 1) {
+                            selectedLine1 = line[1];
+                            selectedLine2 = line[0];
+                        }
+                        if (i == 2) {
+                            selectedLine1 = line[2];
+                            selectedLine2 = line[1];
+                        }
+
                     }
                 }
             }
             console.log('x=', mouse.x, 'y=', mouse.y);
         };
 
-        window.onmouseup = function () {
-            selected = false;
-        };
-
-
+        
 
     </script>
 </body>
