@@ -74,6 +74,8 @@
             j = 0;
             m = 0;
             n = 0;
+
+            clearViewCoordinates();
         }
 
         Circle.prototype = {
@@ -153,6 +155,33 @@
             else return false;
         };
 
+        var printViewCoordinates = function () {
+            if (circle.length > 2) {
+                var coordinatsPeak_1 = "Peak №1: X= " + circle[0].centerX + " Y= " + circle[0].centerY;
+                var coordinatsPeak_2 = "Peak №2: X= " + circle[1].centerX + " Y= " + circle[1].centerY;
+                var coordinatsPeak_3 = "Peak №3: X= " + circle[2].centerX + " Y= " + circle[2].centerY;
+                var squareParallelogramView = "Square Parallelogram: " + squareParallelogram;
+                var squareCircleView = "Square Circle: " + squareParallelogram;;
+                ctx.fillStyle = "#00F";
+                ctx.textAlign = "end";
+                ctx.font = 'italic 14px arial';
+                ctx.textBaseline = "top";
+                ctx.fillText(coordinatsPeak_1, 700, 50);
+                ctx.fillText(coordinatsPeak_2, 700, 75);
+                ctx.fillText(coordinatsPeak_3, 700, 100);
+                ctx.fillText(squareParallelogramView, 700, 125);
+                ctx.fillText(squareCircleView, 700, 150);
+            }
+        };
+
+        var clearViewCoordinates = function () {
+            ctx.beginPath();
+            ctx.fillStyle = '#b7b6b6';
+            ctx.rect(500, 45, 300, 180);
+            ctx.fill();
+            ctx.closePath();
+        };
+
         window.onmouseup = function () {
             if (isCursorInCanvas()) {
                 if (j < 3) {
@@ -167,8 +196,9 @@
                     getRadiusBigCircle();
                     bigCircle.push(new Circle(centreMassX, centreMassY, radiusBigCircle));
                     j++;
+                    printViewCoordinates();//*
                 }
-
+                
                 selected = false;
             }
 
@@ -210,7 +240,7 @@
         }
 
         setInterval(function () {
-
+            
             if (isCursorInCanvas()) {
                 for (let i in circle) {
                     circle[i].draw();
@@ -240,7 +270,7 @@
 
                     getFourthPeak();
 
-
+                    clearViewCoordinates();
                     selectedLine1.clear();
                     selectedLine2.clear();
                     selectedLine3.clear();
@@ -262,6 +292,7 @@
                     selectedBigCircle.centerY = centreMassY;
                     selectedBigCircle.radius = radiusBigCircle;
 
+                    printViewCoordinates();//*
                     selectedLine1.draw();
                     selectedLine2.draw();
                     selectedLine3.draw();
@@ -309,6 +340,7 @@
                             selectedLine4 = line[2];
                             unselectedLine = line[0];
                         }
+                        clearViewCoordinates();
                     }
                 }
             }
