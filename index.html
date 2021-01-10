@@ -20,6 +20,8 @@
         var selected = false;
         var selectedLine1 = false;
         var selectedLine2 = false;
+        var selectedLine3 = false;
+        var selectedLine4 = false;
         let radiusCircle = 5.5;
         var circle = [];
         var line = [];
@@ -81,7 +83,7 @@
             draw: function () {
                 ctx.beginPath();
                 ctx.lineWidth = 1;
-                ctx.strokeStyle = 'red';
+                ctx.strokeStyle = 'blue';
                 ctx.moveTo(this.xStart, this.yStart);
                 ctx.lineTo(this.xEnd, this.yEnd);
                 ctx.stroke();
@@ -105,38 +107,36 @@
 
         
         window.onmouseup = function () {
-            console.log('j1=', j);
             if (j < 3) {
                 circle.push(new Circle(mouse.x - radiusCircle, mouse.y - radiusCircle, radiusCircle));
                 j++;
-                console.log('j2=', j);
             }
-
-            console.log('j3=', j);
             if (j == 3) {
-                for (m; m < 3; m++) {
-                    if (m < 2) line.push(new Line(circle[m].centerX, circle[m].centerY, circle[m + 1].centerX, circle[m + 1].centerY));
-                    if (m == 2) line.push(new Line(circle[m].centerX, circle[m].centerY, circle[0].centerX, circle[0].centerY));
-                    console.log('m=', m, 'line[] =', line[m]);
-                };
-                
+                getParallelogram();
+                j++;
             }
 
-            //for (let n in line) {
-            //    line[n].clear();
-            //    //line[m].draw();
-            //    console.log('clear n=', n, 'xStart=', line[n].xStart, 'yStart=', line[n].yStart, 'xEnd=', line[n].xEnd, 'yEnd=', line[n].yEnd);
-            //}
-            //for (let n in line) {
-            //    //line[m].clear();
-            //    line[n].draw();
-            //    console.log('draw n=', n, 'xStart=', line[n].xStart, 'yStart=', line[n].yStart, 'xEnd=', line[n].xEnd, 'yEnd=', line[n].yEnd);
-            //}
             selected = false;
         };
 
-        
-        
+        var fourthPeakX = 0;
+        var fourthPeakY = 0;
+
+        var getParallelogram = function () {
+
+            getFourthPeak();
+            line.push(new Line(circle[0].centerX, circle[0].centerY, circle[1].centerX, circle[1].centerY));
+            line.push(new Line(circle[1].centerX, circle[1].centerY, fourthPeakX, fourthPeakY));
+            line.push(new Line(fourthPeakX, fourthPeakY, circle[2].centerX, circle[2].centerY));
+            line.push(new Line(circle[2].centerX, circle[2].centerY, circle[0].centerX, circle[0].centerY));
+            
+        };
+
+        var getFourthPeak = function () {
+
+            fourthPeakX = (circle[2].centerX + circle[1].centerX) - circle[0].centerX;
+            fourthPeakY = (circle[2].centerY + circle[1].centerY) - circle[0].centerY;
+        }
 
         setInterval(function () {
             
@@ -149,7 +149,6 @@
             }
 
             for (let i in line) {
-                //line[i].clear();
                 line[i].draw();
             }
 
@@ -159,20 +158,26 @@
                 selected.centerY = mouse.y - selected.radius;
                 selected.stroke();
 
+                getFourthPeak();
 
                 selectedLine1.clear();
                 selectedLine2.clear();
+                selectedLine3.clear();
+                selectedLine4.clear();
                 
                 selectedLine1.xStart = mouse.x - selected.radius;
-                console.log('selectedLine1.xStart =', selectedLine1.xStart);
                 selectedLine1.yStart = mouse.y - selected.radius;
-                console.log('selectedLine1.yStart=', selectedLine1.yStart);
-
-                selectedLine2.xEnd = mouse.x - selected.radius;
-                selectedLine2.yEnd = mouse.y - selected.radius;
+                selectedLine4.xEnd = mouse.x - selected.radius;
+                selectedLine4.yEnd = mouse.y - selected.radius;
+                selectedLine3.xStart = fourthPeakX;
+                selectedLine3.yStart = fourthPeakY;
+                selectedLine2.xEnd = fourthPeakX;
+                selectedLine2.yEnd = fourthPeakY;
 
                 selectedLine1.draw();
                 selectedLine2.draw();
+                selectedLine3.draw();
+                selectedLine4.draw();
             }
 
         }, 30);
@@ -190,21 +195,25 @@
                         selected = circle[i];
                         if (i == 0) {
                             selectedLine1 = line[0];
-                            selectedLine2 = line[2];
+                            selectedLine2 = line[1];
+                            selectedLine3 = line[2];
+                            selectedLine4 = line[3];
                         } 
                         if (i == 1) {
                             selectedLine1 = line[1];
-                            selectedLine2 = line[0];
+                            selectedLine2 = line[1];
+                            selectedLine3 = line[2];
+                            selectedLine4 = line[0];
                         }
                         if (i == 2) {
-                            selectedLine1 = line[2];
+                            selectedLine1 = line[3];
                             selectedLine2 = line[1];
+                            selectedLine3 = line[2];
+                            selectedLine4 = line[2];
                         }
-
                     }
                 }
             }
-            console.log('x=', mouse.x, 'y=', mouse.y);
         };
 
         
