@@ -7,6 +7,11 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <!--<p>Click the "Try it" button to create a BUTTON element with a "Click me" text.</p>-->
+
+    <button onclick="ResetPicture()">Reset</button>
+    <button onclick="ShowAbout()">About</button>
+
     <script type="text/javascript">
         var canvas = document.querySelector('canvas');
         var ctx = canvas.getContext('2d');
@@ -50,6 +55,26 @@
             this.centerY = y;
             this.radius = r;
         };
+
+        function ResetPicture() {
+            for (let i in circle) {
+                circle[i].clear();
+            }
+            circle.splice(0, circle.length);
+
+            for (let i in line) {
+                line[i].clear();
+            }
+            line.splice(0, line.length);
+            for (let i in bigCircle) {
+                bigCircle[i].clear();
+            }
+            bigCircle.splice(0, bigCircle.length);
+
+            j = 0;
+            m = 0;
+            n = 0;
+        }
 
         Circle.prototype = {
             draw: function () {
@@ -120,28 +145,33 @@
         };
 
         var isCursorInCircle = function (circle) {
-            return mouse.x > circle.centerX && mouse.x < circle.centerX + 2*circle.radius && mouse.y > circle.centerY  && mouse.y < circle.centerY + 2*circle.radius;
+            return mouse.x > circle.centerX && mouse.x < circle.centerX + 2 * circle.radius && mouse.y > circle.centerY && mouse.y < circle.centerY + 2 * circle.radius;
         };
 
-        
+        var isCursorInCanvas = function () {
+            if (mouse.x < width && mouse.y < height) return true;
+            else return false;
+        };
+
         window.onmouseup = function () {
-            if (j < 3) {
-                circle.push(new Circle(mouse.x - radiusCircle, mouse.y - radiusCircle, radiusCircle));
-                j++;
+            if (isCursorInCanvas()) {
+                if (j < 3) {
+                    circle.push(new Circle(mouse.x - radiusCircle, mouse.y - radiusCircle, radiusCircle));
+                    j++;
+                }
+
+                if (j == 3) {
+                    getParallelogram();
+                    getSquareParallelogram();
+                    getCentreMass();
+                    getRadiusBigCircle();
+                    bigCircle.push(new Circle(centreMassX, centreMassY, radiusBigCircle));
+                    j++;
+                }
+
+                selected = false;
             }
 
-            
-
-            if (j == 3) {
-                getParallelogram();
-                getSquareParallelogram();
-                getCentreMass();
-                getRadiusBigCircle();
-                bigCircle.push(new Circle(centreMassX, centreMassY, radiusBigCircle));
-                j++;
-            }
-             
-            selected = false;
         };
 
         var getParallelogram = function () {
@@ -151,26 +181,28 @@
             line.push(new Line(circle[1].centerX, circle[1].centerY, fourthPeakX, fourthPeakY));
             line.push(new Line(fourthPeakX, fourthPeakY, circle[2].centerX, circle[2].centerY));
             line.push(new Line(circle[2].centerX, circle[2].centerY, circle[0].centerX, circle[0].centerY));
-            
+
         };
 
         var getFourthPeak = function () {
+            if (circle.length > 2) {
+                fourthPeakX = (circle[2].centerX + circle[1].centerX) - circle[0].centerX;
+                fourthPeakY = (circle[2].centerY + circle[1].centerY) - circle[0].centerY;
+            }
 
-            fourthPeakX = (circle[2].centerX + circle[1].centerX) - circle[0].centerX;
-            fourthPeakY = (circle[2].centerY + circle[1].centerY) - circle[0].centerY;
         }
 
         var getSquareParallelogram = function () {
-            if (circle.length == 3) squareParallelogram = Math.abs((circle[1].centerX - circle[0].centerX) * (circle[2].centerY - circle[0].centerY) - (circle[2].centerX - circle[0].centerX) * (circle[1].centerY - circle[0].centerY));
+            if (circle.length > 2) squareParallelogram = Math.abs((circle[1].centerX - circle[0].centerX) * (circle[2].centerY - circle[0].centerY) - (circle[2].centerX - circle[0].centerX) * (circle[1].centerY - circle[0].centerY));
             console.log('S= ', squareParallelogram);
         }
 
         var getCentreMass = function () {
-            if (circle.length == 3) {
+            if (circle.length > 2) {
                 centreMassX = (circle[1].centerX + circle[2].centerX) / 2;
                 centreMassY = (circle[1].centerY + circle[2].centerY) / 2;
             }
-            
+
         }
 
         var getRadiusBigCircle = function () {
@@ -178,67 +210,70 @@
         }
 
         setInterval(function () {
-            
-            for (let i in circle) {
-                circle[i].draw();
 
-                if (isCursorInCircle(circle[i])) {
-                    circle[i].stroke();
+            if (isCursorInCanvas()) {
+                for (let i in circle) {
+                    circle[i].draw();
+
+                    if (isCursorInCircle(circle[i])) {
+                        circle[i].stroke();
+                    }
+                }
+
+                for (let i in line) {
+                    line[i].draw();
+                }
+
+                getSquareParallelogram();
+                getCentreMass();
+                getRadiusBigCircle();
+
+                for (let i in bigCircle) {
+                    bigCircle[i].strokeYellow();
+                }
+
+                if (selected) {
+                    selected.clear();
+                    selected.centerX = mouse.x - selected.radius;
+                    selected.centerY = mouse.y - selected.radius;
+                    selected.stroke();
+
+                    getFourthPeak();
+
+
+                    selectedLine1.clear();
+                    selectedLine2.clear();
+                    selectedLine3.clear();
+                    selectedLine4.clear();
+                    if (unselectedLine) unselectedLine.clear();
+
+                    selectedBigCircle.clear();
+
+                    selectedLine1.xStart = mouse.x - selected.radius;
+                    selectedLine1.yStart = mouse.y - selected.radius;
+                    selectedLine2.xEnd = fourthPeakX;
+                    selectedLine2.yEnd = fourthPeakY;
+                    selectedLine3.xStart = fourthPeakX;
+                    selectedLine3.yStart = fourthPeakY;
+                    selectedLine4.xEnd = mouse.x - selected.radius;
+                    selectedLine4.yEnd = mouse.y - selected.radius;
+
+                    selectedBigCircle.centerX = centreMassX;
+                    selectedBigCircle.centerY = centreMassY;
+                    selectedBigCircle.radius = radiusBigCircle;
+
+                    selectedLine1.draw();
+                    selectedLine2.draw();
+                    selectedLine3.draw();
+                    selectedLine4.draw();
+                    if (unselectedLine) unselectedLine.draw();
+
+                    selectedBigCircle.strokeYellow();
                 }
             }
 
-            for (let i in line) {
-                line[i].draw();
-            }
-
-            getSquareParallelogram();
-            getCentreMass();
-            getRadiusBigCircle();
-
-            for (let i in bigCircle) {
-                bigCircle[i].strokeYellow();
-            }
-
-            if (selected) {
-                selected.clear();
-                selected.centerX = mouse.x - selected.radius;
-                selected.centerY = mouse.y - selected.radius;
-                selected.stroke();
-
-                getFourthPeak();
 
 
-                selectedLine1.clear();
-                selectedLine2.clear();
-                selectedLine3.clear();
-                selectedLine4.clear();
-                unselectedLine.clear();
-
-                selectedBigCircle.clear();
-
-                selectedLine1.xStart = mouse.x - selected.radius;
-                selectedLine1.yStart = mouse.y - selected.radius;
-                selectedLine2.xEnd = fourthPeakX;
-                selectedLine2.yEnd = fourthPeakY;
-                selectedLine3.xStart = fourthPeakX;
-                selectedLine3.yStart = fourthPeakY;
-                selectedLine4.xEnd = mouse.x - selected.radius;
-                selectedLine4.yEnd = mouse.y - selected.radius;
-
-                selectedBigCircle.centerX = centreMassX;
-                selectedBigCircle.centerY = centreMassY;
-                selectedBigCircle.radius = radiusBigCircle;
-
-                selectedLine1.draw();
-                selectedLine2.draw();
-                selectedLine3.draw();
-                selectedLine4.draw();
-                unselectedLine.draw();
-
-                selectedBigCircle.strokeYellow();
-            }
-
-            
 
         }, 30);
 
@@ -248,8 +283,8 @@
         };
 
         window.onmousedown = function () {
-            if (!selected) {
-                let  i;
+            if (!selected && isCursorInCanvas()) {
+                let i;
                 for (i in circle) {
                     if (isCursorInCircle(circle[i])) {
                         selected = circle[i];
@@ -259,7 +294,7 @@
                             selectedLine2 = line[1];
                             selectedLine3 = line[2];
                             selectedLine4 = line[3];
-                        } 
+                        }
                         if (i == 1) {
                             selectedLine1 = line[1];
                             selectedLine2 = line[1];
@@ -279,7 +314,7 @@
             }
         };
 
-        
+
 
     </script>
 </body>
