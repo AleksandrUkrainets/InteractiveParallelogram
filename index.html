@@ -1,0 +1,376 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div>
+        <button onclick="resetPicture()">Reset</button>
+        <button onclick="printViewAbout()">About</button>
+    </div>
+    
+
+    <script type="text/javascript">
+        var canvas = document.querySelector('canvas');
+        var ctx = canvas.getContext('2d');
+        var width = "800", height = "600";
+
+        var mouse = {
+            x: 0,
+            y: 0
+        };
+
+        var selected = false;
+        var selectedLine1 = false;
+        var selectedLine2 = false;
+        var selectedLine3 = false;
+        var selectedLine4 = false;
+        var unselectedLine = false;
+        var selectedBigCircle = false;
+        let radiusCircle = 5.5;
+        var circle = [];
+        var line = [];
+        var j = 0;
+        var m = 0;
+        var n = 0;
+        var fourthPeakX = 0;
+        var fourthPeakY = 0;
+        var squareParallelogram = 0;
+        var centreMassX = 0;
+        var centreMassY = 0;
+        var radiusBigCircle = 0;
+        var bigCircle = [];
+
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.backgroundColor = '#b7b6b6';
+
+        ctx.fillStyle = 'red';
+        ctx.lineWidth = 1;
+
+        var Circle = function (x, y, r) {
+            this.centerX = x;
+            this.centerY = y;
+            this.radius = r;
+        };
+
+        function resetPicture() {
+            circle.splice(0, circle.length);
+            line.splice(0, line.length);
+            bigCircle.splice(0, bigCircle.length);
+
+            j = 0;
+            m = 0;
+            n = 0;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        Circle.prototype = {
+            draw: function () {
+                ctx.beginPath();
+                ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.strokeStyle = 'red';
+                ctx.stroke();
+            },
+
+            stroke: function () {
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.strokeStyle = 'blue';
+                ctx.stroke();
+            },
+
+            strokeYellow: function () {
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI, false);
+                ctx.strokeStyle = 'yellow';
+                ctx.stroke();
+            },
+
+            clear: function () {
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                ctx.arc(this.centerX, this.centerY, this.radius + ctx.lineWidth, 0, 2 * Math.PI, false);
+                ctx.fillStyle = '#b7b6b6';
+                ctx.fill();
+                ctx.strokeStyle = '#b7b6b6';
+                ctx.stroke();
+            }
+        };
+
+        var Line = function (xStart, yStart, xEnd, yEnd) {
+            this.xStart = xStart;
+            this.yStart = yStart;
+            this.xEnd = xEnd;
+            this.yEnd = yEnd;
+        };
+
+        Line.prototype = {
+            draw: function () {
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'blue';
+                ctx.moveTo(this.xStart, this.yStart);
+                ctx.lineTo(this.xEnd, this.yEnd);
+                ctx.stroke();
+                ctx.closePath();
+            },
+
+            clear: function () {
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                ctx.moveTo(this.xStart, this.yStart);
+                ctx.lineTo(this.xEnd, this.yEnd);
+                ctx.strokeStyle = '#b7b6b6';
+                ctx.stroke();
+                ctx.closePath();
+            }
+        };
+
+        var isCursorInCircle = function (circle) {
+            return mouse.x > circle.centerX && mouse.x < circle.centerX + 2 * circle.radius && mouse.y > circle.centerY && mouse.y < circle.centerY + 2 * circle.radius;
+        };
+
+        var isCursorInCanvas = function () {
+            if (mouse.x < width && mouse.y < height) return true;
+            else return false;
+        };
+
+        var printViewCoordinates = function () {
+            if (circle.length > 2) {
+                var coordinatsPeak_1 = "Peak №1: X= " + circle[0].centerX + " Y= " + circle[0].centerY;
+                var coordinatsPeak_2 = "Peak №2: X= " + circle[1].centerX + " Y= " + circle[1].centerY;
+                var coordinatsPeak_3 = "Peak №3: X= " + circle[2].centerX + " Y= " + circle[2].centerY;
+                var squareParallelogramView = "Square Parallelogram: " + squareParallelogram;
+                var squareCircleView = "Square Circle: " + squareParallelogram;;
+                ctx.fillStyle = "#000";
+                ctx.textAlign = "end";
+                ctx.font = 'italic 14px arial';
+                ctx.textBaseline = "top";
+                ctx.fillText(coordinatsPeak_1, 700, 50);
+                ctx.fillText(coordinatsPeak_2, 700, 75);
+                ctx.fillText(coordinatsPeak_3, 700, 100);
+                ctx.fillText(squareParallelogramView, 700, 125);
+                ctx.fillText(squareCircleView, 700, 150);
+            }
+        };
+
+        var printViewAbout = function () {
+            resetPicture();
+            var maxWidth = 400; 
+            var lineHeight = 25;
+            var marginLeft = 180;
+            var marginTop = 40;
+            var text = "    Программа <Адаптивные геометрические фигуры> позволяет выполнять несколько функций:" +
+                "построение параллелограмма и окружности в рабочей области программы, " +
+                "изменение размеров геометрических фигур, путём перетаскивания ключевых точек, выделенных красным цветом, " +
+                "в правом верхнем углу рабочей области программы выводятся текущие координаты ключевых точек и площади фигур, " + 
+                "центр окружности расположен в центре масс параллелограмма, " +
+                "площади фигур равны между собой, " +
+                "кнопка <Reset> очищает рабочую область программы и позволяет построить фигуры заново." +
+                "  Автор программы: " +
+                "  Александр Украинец," +
+                "  e-mail: ukrainets.alexander@gmail.com, " +
+                "  Киев, 2021г. ";
+
+            ctx.font = "italic 14px arial";
+            ctx.fillStyle = "#000";
+            wrapText(ctx, text, marginLeft, marginTop, maxWidth, lineHeight);
+            
+        };
+
+        var wrapText = function(ctx, text, marginLeft, marginTop, maxWidth, lineHeight) {
+            var words = text.split(" ");
+            var countWords = words.length;
+            var line = "";
+            ctx.textAlign = "left";
+            for (var n = 0; n < countWords; n++) {
+                var testLine = line + words[n] + " ";
+                var testWidth = ctx.measureText(testLine).width;
+                if (testWidth > maxWidth) {
+                    ctx.fillText(line, marginLeft, marginTop);
+                    line = words[n] + " ";
+                    marginTop += lineHeight;
+                }
+                else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, marginLeft, marginTop);
+        }
+
+        var clearViewCoordinates = function () {
+            ctx.beginPath();
+            ctx.fillStyle = '#b7b6b6';
+            ctx.rect(500, 45, 300, 180);
+            ctx.fill();
+            ctx.closePath();
+        };
+
+        window.onmouseup = function () {
+            if (isCursorInCanvas()) {
+                if (j < 3) {
+                    circle.push(new Circle(mouse.x - radiusCircle, mouse.y - radiusCircle, radiusCircle));
+                    j++;
+                }
+
+                if (j == 3) {
+                    getParallelogram();
+                    getSquareParallelogram();
+                    getCentreMass();
+                    getRadiusBigCircle();
+                    bigCircle.push(new Circle(centreMassX, centreMassY, radiusBigCircle));
+                    j++;
+                    printViewCoordinates();
+                }
+                
+                selected = false;
+            }
+        };
+
+        var getParallelogram = function () {
+
+            getFourthPeak();
+            line.push(new Line(circle[0].centerX, circle[0].centerY, circle[1].centerX, circle[1].centerY));
+            line.push(new Line(circle[1].centerX, circle[1].centerY, fourthPeakX, fourthPeakY));
+            line.push(new Line(fourthPeakX, fourthPeakY, circle[2].centerX, circle[2].centerY));
+            line.push(new Line(circle[2].centerX, circle[2].centerY, circle[0].centerX, circle[0].centerY));
+        };
+
+        var getFourthPeak = function () {
+            if (circle.length > 2) {
+                fourthPeakX = (circle[2].centerX + circle[1].centerX) - circle[0].centerX;
+                fourthPeakY = (circle[2].centerY + circle[1].centerY) - circle[0].centerY;
+            }
+        };
+
+        var getSquareParallelogram = function () {
+            if (circle.length > 2) squareParallelogram = Math.abs((circle[1].centerX - circle[0].centerX) * (circle[2].centerY - circle[0].centerY) - (circle[2].centerX - circle[0].centerX) * (circle[1].centerY - circle[0].centerY));
+        };
+
+        var getCentreMass = function () {
+            if (circle.length > 2) {
+                centreMassX = (circle[1].centerX + circle[2].centerX) / 2;
+                centreMassY = (circle[1].centerY + circle[2].centerY) / 2;
+            }
+        };
+
+        var getRadiusBigCircle = function () {
+            radiusBigCircle = Math.sqrt(squareParallelogram / Math.PI);
+        };
+
+        setInterval(function () {
+            
+            if (isCursorInCanvas()) {
+                for (let i in circle) {
+                    circle[i].draw();
+
+                    if (isCursorInCircle(circle[i])) {
+                        circle[i].stroke();
+                    }
+                }
+
+                for (let i in line) {
+                    line[i].draw();
+                }
+
+                getSquareParallelogram();
+                getCentreMass();
+                getRadiusBigCircle();
+
+                for (let i in bigCircle) {
+                    bigCircle[i].strokeYellow();
+                }
+
+                if (selected) {
+                    selected.clear();
+                    selected.centerX = mouse.x - selected.radius;
+                    selected.centerY = mouse.y - selected.radius;
+                    selected.stroke();
+
+                    getFourthPeak();
+
+                    clearViewCoordinates();
+                    selectedLine1.clear();
+                    selectedLine2.clear();
+                    selectedLine3.clear();
+                    selectedLine4.clear();
+                    if (unselectedLine) unselectedLine.clear();
+
+                    selectedBigCircle.clear();
+
+                    selectedLine1.xStart = mouse.x - selected.radius;
+                    selectedLine1.yStart = mouse.y - selected.radius;
+                    selectedLine2.xEnd = fourthPeakX;
+                    selectedLine2.yEnd = fourthPeakY;
+                    selectedLine3.xStart = fourthPeakX;
+                    selectedLine3.yStart = fourthPeakY;
+                    selectedLine4.xEnd = mouse.x - selected.radius;
+                    selectedLine4.yEnd = mouse.y - selected.radius;
+
+                    selectedBigCircle.centerX = centreMassX;
+                    selectedBigCircle.centerY = centreMassY;
+                    selectedBigCircle.radius = radiusBigCircle;
+
+                    printViewCoordinates();
+                    selectedLine1.draw();
+                    selectedLine2.draw();
+                    selectedLine3.draw();
+                    selectedLine4.draw();
+                    if (unselectedLine) unselectedLine.draw();
+
+                    selectedBigCircle.strokeYellow();
+                }
+            }
+        }, 30);
+
+        window.onmousemove = function (event) {
+            mouse.x = event.pageX;
+            mouse.y = event.pageY;
+        };
+
+        window.onmousedown = function () {
+            if (!selected && isCursorInCanvas()) {
+                let i;
+                for (i in circle) {
+                    if (isCursorInCircle(circle[i])) {
+                        selected = circle[i];
+                        selectedBigCircle = bigCircle[0];
+                        if (i == 0) {
+                            selectedLine1 = line[0];
+                            selectedLine2 = line[1];
+                            selectedLine3 = line[2];
+                            selectedLine4 = line[3];
+                        }
+                        if (i == 1) {
+                            selectedLine1 = line[1];
+                            selectedLine2 = line[1];
+                            selectedLine3 = line[2];
+                            selectedLine4 = line[0];
+                            unselectedLine = line[3];
+                        }
+                        if (i == 2) {
+                            selectedLine1 = line[3];
+                            selectedLine2 = line[1];
+                            selectedLine3 = line[2];
+                            selectedLine4 = line[2];
+                            unselectedLine = line[0];
+                        }
+                        clearViewCoordinates();
+                    }
+                }
+            }
+        };
+    </script>
+</body>
+</html>
