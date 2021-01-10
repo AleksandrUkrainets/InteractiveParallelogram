@@ -7,10 +7,8 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    <!--<p>Click the "Try it" button to create a BUTTON element with a "Click me" text.</p>-->
-
-    <button onclick="ResetPicture()">Reset</button>
-    <button onclick="ShowAbout()">About</button>
+    <button onclick="resetPicture()">Reset</button>
+    <button onclick="printViewAbout()">About</button>
 
     <script type="text/javascript">
         var canvas = document.querySelector('canvas');
@@ -56,26 +54,16 @@
             this.radius = r;
         };
 
-        function ResetPicture() {
-            for (let i in circle) {
-                circle[i].clear();
-            }
+        function resetPicture() {
             circle.splice(0, circle.length);
-
-            for (let i in line) {
-                line[i].clear();
-            }
             line.splice(0, line.length);
-            for (let i in bigCircle) {
-                bigCircle[i].clear();
-            }
             bigCircle.splice(0, bigCircle.length);
 
             j = 0;
             m = 0;
             n = 0;
 
-            clearViewCoordinates();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
         Circle.prototype = {
@@ -162,7 +150,7 @@
                 var coordinatsPeak_3 = "Peak №3: X= " + circle[2].centerX + " Y= " + circle[2].centerY;
                 var squareParallelogramView = "Square Parallelogram: " + squareParallelogram;
                 var squareCircleView = "Square Circle: " + squareParallelogram;;
-                ctx.fillStyle = "#00F";
+                ctx.fillStyle = "#000";
                 ctx.textAlign = "end";
                 ctx.font = 'italic 14px arial';
                 ctx.textBaseline = "top";
@@ -173,6 +161,50 @@
                 ctx.fillText(squareCircleView, 700, 150);
             }
         };
+
+        var printViewAbout = function () {
+            resetPicture();
+            var maxWidth = 400; 
+            var lineHeight = 25;
+            var marginLeft = 180;
+            var marginTop = 40;
+            var text = "    Программа <Адаптивные геометрические фигуры> позволяет выполнять несколько функций:" +
+                "построение параллелограмма и окружности в рабочей области программы, " +
+                "изменение размеров геометрических фигур, путём перетаскивания ключевых точек, выделенных красным цветом, " +
+                "в правом верхнем углу рабочей области программы выводятся текущие координаты ключевых точек и площади фигур, " + 
+                "центр окружности расположен в центре масс параллелограмма, " +
+                "площади фигур равны между собой, " +
+                "кнопка <Reset> очищает рабочую область программы и позволяет построить фигуры заново." +
+                "  Автор программы: " +
+                "  Александр Украинец," +
+                "  e-mail: ukrainets.alexander@gmail.com, " +
+                "  Киев, 2021г. ";
+
+            ctx.font = "italic 14px arial";
+            ctx.fillStyle = "#000";
+            wrapText(ctx, text, marginLeft, marginTop, maxWidth, lineHeight);
+            
+        };
+
+        var wrapText = function(ctx, text, marginLeft, marginTop, maxWidth, lineHeight) {
+            var words = text.split(" ");
+            var countWords = words.length;
+            var line = "";
+            ctx.textAlign = "left";
+            for (var n = 0; n < countWords; n++) {
+                var testLine = line + words[n] + " ";
+                var testWidth = ctx.measureText(testLine).width;
+                if (testWidth > maxWidth) {
+                    ctx.fillText(line, marginLeft, marginTop);
+                    line = words[n] + " ";
+                    marginTop += lineHeight;
+                }
+                else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, marginLeft, marginTop);
+        }
 
         var clearViewCoordinates = function () {
             ctx.beginPath();
@@ -196,12 +228,11 @@
                     getRadiusBigCircle();
                     bigCircle.push(new Circle(centreMassX, centreMassY, radiusBigCircle));
                     j++;
-                    printViewCoordinates();//*
+                    printViewCoordinates();
                 }
                 
                 selected = false;
             }
-
         };
 
         var getParallelogram = function () {
@@ -211,7 +242,6 @@
             line.push(new Line(circle[1].centerX, circle[1].centerY, fourthPeakX, fourthPeakY));
             line.push(new Line(fourthPeakX, fourthPeakY, circle[2].centerX, circle[2].centerY));
             line.push(new Line(circle[2].centerX, circle[2].centerY, circle[0].centerX, circle[0].centerY));
-
         };
 
         var getFourthPeak = function () {
@@ -219,25 +249,22 @@
                 fourthPeakX = (circle[2].centerX + circle[1].centerX) - circle[0].centerX;
                 fourthPeakY = (circle[2].centerY + circle[1].centerY) - circle[0].centerY;
             }
-
-        }
+        };
 
         var getSquareParallelogram = function () {
             if (circle.length > 2) squareParallelogram = Math.abs((circle[1].centerX - circle[0].centerX) * (circle[2].centerY - circle[0].centerY) - (circle[2].centerX - circle[0].centerX) * (circle[1].centerY - circle[0].centerY));
-            console.log('S= ', squareParallelogram);
-        }
+        };
 
         var getCentreMass = function () {
             if (circle.length > 2) {
                 centreMassX = (circle[1].centerX + circle[2].centerX) / 2;
                 centreMassY = (circle[1].centerY + circle[2].centerY) / 2;
             }
-
-        }
+        };
 
         var getRadiusBigCircle = function () {
             radiusBigCircle = Math.sqrt(squareParallelogram / Math.PI);
-        }
+        };
 
         setInterval(function () {
             
@@ -292,7 +319,7 @@
                     selectedBigCircle.centerY = centreMassY;
                     selectedBigCircle.radius = radiusBigCircle;
 
-                    printViewCoordinates();//*
+                    printViewCoordinates();
                     selectedLine1.draw();
                     selectedLine2.draw();
                     selectedLine3.draw();
@@ -302,10 +329,6 @@
                     selectedBigCircle.strokeYellow();
                 }
             }
-
-
-
-
         }, 30);
 
         window.onmousemove = function (event) {
@@ -345,9 +368,6 @@
                 }
             }
         };
-
-
-
     </script>
 </body>
 </html>
